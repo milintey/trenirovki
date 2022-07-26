@@ -24,6 +24,7 @@ const db = getFirestore(app);
 // const auth = getAuth(app);
 
 let userId = "";
+let userEmail = "";
 
 const searchForm = document.querySelector('.search-form');
 const vhodBtn = document.querySelector('.voiti');
@@ -32,13 +33,19 @@ const inputEmail = document.querySelector('.inputEmail');
 const inputPassword = document.querySelector('.inputPassword');
 const vihodBtn = document.querySelector('.vihod');
 const glavnaPage = document.querySelector('.glavna');
+const readWatchedBtn = document.querySelector('.readWatched');
+const readQueueBtn = document.querySelector('.readQueue');
+
+const addWatchedBtn = document.querySelector('.card__btn1');
+const addQueueBtn = document.querySelector('.card__btn2');
 
 
-const chitkaBtn = document.querySelector('.chitka');
-const dobavitBtn = document.querySelector('.dobavit');
+readWatchedBtn.addEventListener('click', onReadWatchedCollection);
+readQueueBtn.addEventListener('click', onReadQueueCollection);
 
-chitkaBtn.addEventListener('click', onReadCollection);
-dobavitBtn.addEventListener('click', onAddCollection);
+addWatchedBtn.addEventListener('click', onAddWatchedCollection);
+addQueueBtn.addEventListener('click', onAddQueueCollection);
+
 registrBtn.addEventListener('click', onRegistrationUser);
 vhodBtn.addEventListener('click', onLoginUser);
 vihodBtn.addEventListener('click', onLogoutUser);
@@ -48,20 +55,66 @@ searchForm.style.display = "none";
 
 onCheckingUser();
 
-async function onReadCollection() {
-    const querySnapshot = await getDocs(collection(db, "databaseFilms"));
+
+function onAddQueueCollection() {
+    addDoc(collection(db, `${userEmail}, QUEUE: ${userId}`), {
+        first: "Alan",
+        middle: "Mathison",
+        last: "Turing",
+        born: 1912
+    });
+}
+
+function onAddWatchedCollection() {
+    // films.owner = userId;
+    // addDoc(collection(db, "databaseFilms"), films);
+
+    addDoc(collection(db, `${userEmail}, WATCHED: ${userId}`), {
+        first: "Alan",
+        middle: "Mathison",
+        last: "Turing",
+        born: 1912
+    });
+}
+
+
+
+
+
+
+// async function onReadCollection() {
+//     const querySnapshot = await getDocs(collection(db, `${userId}`));
+//     querySnapshot.forEach((doc) => {
+//         if (userId === doc.data().owner) {
+//             console.log(`Ключ к документу в колекции: ${doc.id}`, doc.data());
+//         }
+// });
+// }
+
+
+
+async function onReadWatchedCollection() {
+    const querySnapshot = await getDocs(collection(db, `${userEmail}, WATCHED: ${userId}`));
     querySnapshot.forEach((doc) => {
-        if (userId === doc.data().owner) {
-            console.log(`Ключ к документу в колекции: ${doc.id}`, doc.data());
+        if (doc) {
+            console.log(doc.data());
+        } else {
+            console.log("БАЗА ДАННЫХ ПУСТАЯ!");
         }
 });
 }
 
-
-function onAddCollection() {
-    films.owner = userId;
-    addDoc(collection(db, "databaseFilms"), films);
+async function onReadQueueCollection() {
+    const querySnapshot = await getDocs(collection(db, `${userEmail}, QUEUE: ${userId}`));
+    querySnapshot.forEach((doc) => {
+        if (doc) {
+            console.log(doc.data());
+        } else {
+            console.log("БАЗА ДАННЫХ ПУСТАЯ!");
+        }
+});
 }
+
 
 
 async function onCheckingUser() {
@@ -70,6 +123,8 @@ await onAuthStateChanged(auth, (user) => {
   if (user) {
     const uid = user.uid;
     userId = uid;
+    userEmail = user.email;
+      
     glavnaPage.style.display = "block";
     searchForm.style.display = "none";
   } else {
@@ -99,7 +154,13 @@ async function onRegistrationUser() {
         if (user) {
             console.log(user);
             userId = user.uid;
+            userEmail = user.email;
             console.log(userId);
+            console.log(userEmail);
+            
+            addDoc(collection(db, `${userEmail}, WATCHED: ${userId}`), {});
+            addDoc(collection(db, `${userEmail}, QUEUE: ${userId}`), {});
+
             glavnaPage.style.display = "block";
             searchForm.style.display = "none";
             Notiflix.Notify.success('Регистрация прошла успешно! Добро пожаловать на сайт');
@@ -137,6 +198,10 @@ async function onLoginUser() {
         if (user) {
             console.log(user);
             userId = user.uid;
+            userEmail = user.email;
+            console.log(userId);
+            console.log(userEmail);
+
             glavnaPage.style.display = "block";
             searchForm.style.display = "none";
             Notiflix.Notify.info('Добро пожаловать на сайт');
